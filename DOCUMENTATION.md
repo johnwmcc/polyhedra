@@ -7,7 +7,7 @@ This plugin draws the five Platonic solids:
 - Dodecahedron
 - Icosahedron.
 
-![Five Platonic solids image](platonic_solids.jpg "The five Platonic solids")
+->![Five Platonic solids image](platonic_solids.jpg "The five Platonic solids")<-
 
 It works in SketchUp v8 M2 or later, including SU2013 and SU2014 on Windows. I can't test it on Mac, but I bleieve it should work there too.
 
@@ -29,15 +29,15 @@ But some of the fomulae given in Wikipedia (e.g., for the location of the vertic
 
 So I resorted to construction in Sketchup, at a very large scale (unit radius of 1,000,000 inches, with model info set to display five figures after the decimal point), used the Tape Measure tool to scale the model to an exact size of either radius or edge, and used the Dimension tool to measure key dimensions. See:
 
-![Tetrahedron construction](tetrahedron_construction.jpg "Tetrahedron construction")
+->![Tetrahedron construction](tetrahedron_construction.jpg "Tetrahedron construction")<-
 
 and
 
-![Dodecahedron construction](dodecahedron_construction.jpg "Dodecahedron construction")
+->![Dodecahedron construction](dodecahedron_construction.jpg "Dodecahedron construction")<-
 
 and 
 
-![Icosahedron construction](icosahedron_construction.jpg "Icosahedron construction")
+->![Icosahedron construction](icosahedron_construction.jpg "Icosahedron construction")<-
 
 Details of how to construct Dodecahedron and Icosahedron in SketchUp, using rectangles with sides in the Golden Ratio (1 : (1+ sqrt(5))/2), were very helpful: see for example: 
 
