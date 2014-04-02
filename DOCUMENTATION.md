@@ -37,7 +37,7 @@ and
 
 and 
 
-![Icosahedron construction](icosahedron_construction)
+![Icosahedron construction](icosahedron_construction.jpg "Icosahedron construction")
 
 Details of how to construct Dodecahedron and Icosahedron in SketchUp, using rectangles with sides in the Golden Ratio (1 : (1+ sqrt(5))/2), were very helpful: see for example: 
 
