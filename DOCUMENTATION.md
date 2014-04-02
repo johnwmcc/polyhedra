@@ -10,7 +10,7 @@ Initially, the plugin will draw just the five Platonic solids:
 I hope later to add code for the stellated regular polyhedra.
 
 ## Usage
-Install the plugin in the usual way (see notes at [reference needed].
+Install the plugin in the usual way (see notes at [reference needed]).
 
 You should now find an extra item in the Draw menu, Polyhedra with a submenu for each shape as listed above.
 
