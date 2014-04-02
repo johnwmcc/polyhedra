@@ -4,8 +4,7 @@
 # A plugin to draw parametric regular polyhedra, centred on the origin, of a user-specified radius
 
 # v1.0. Draws all Platonic solids. Parts of the code adapted from Parametric3D Shapes plugin
-
-## Note - it would be nice later to offer the choice of specifying edge length or radius for size.
+# v1.1  Added choice of length of side, or radius, for size.
 
 # Load other required files
 require "sketchup.rb"
@@ -24,14 +23,27 @@ ASIN_0333 = Math.asin(0.333333333333) # (in radians) = 19.471220614233577 degree
 
 # Define constant cos((asin(0.333333)) - angle between radius of base and edge of base
 COS_ASIN_0333 = Math.cos(ASIN_0333)
-#p "Cos(asin(0.3333333)) = " + COS_ASIN_0333.to_s
-#p  "asin(0.3333) = " + ASIN_0333.to_s
+
+# Define constant for the ratio of side to radius
+SIDE_TO_RAD_TETRA = 1.632993161856
 #============================================================================
 ## Cube
 #------
 # Define constant sqrt(3)
-SQRT3 = Math.sqrt(3)
+SQRT3 = Math.sqrt(3.0)
 
+# Define constant for the ratio of radius to side
+SIDE_TO_RAD_CUBE = 2.0/SQRT3
+
+#============================================================================
+# Octahedron
+# Pre-define constant sqrt(2) to save calculation time
+SQRT2 = Math.sqrt(2.0)
+
+# Define constant for ratio of side to radius
+SIDE_TO_RAD_OCTA = SQRT2
+
+#============================================================================
 ## Dodecahedron and Icosahedron
 #------------------------------
 # Define constant PHI as the Golden Ratio (used in constructing Dodecahedron and Icosahedron)
@@ -42,15 +54,16 @@ PHI = (1.0 + Math.sqrt(5.0))/2 # = 1.618033988749895 approx
 SHORT_SIDE = 0.52573125081 # Mathematical definitions to replace this in due course
 LONG_SIDE = 0.85065072264
 
-# Pre-define constant sqrt(2) to save calculation time
-SQRT2 = Math.sqrt(2.0)
-
 # Define constants as the lengths of sides of a Golden Section rectangle which defines 
 #   location of points of Dodadecahedron of unit radius r (derived from accurate scale drawing:
 #   mathematical derivation to replace this in due course. See diagram for definition of a, b, and c)
 DDH_A = 0.607061998207
 DDH_B = 0.982246946377
 DDH_C = 0.794654472292
+
+# Define constant for ratio of side to radius
+SIDE_TO_RAD_DODECA = 0.713644179547
+SIDE_TO_RAD_ICOSA = 1.051462501620
 
 #=============================================================================
 # Find which unit and format the model is using and define unit_length
@@ -106,6 +119,19 @@ def self.unit_length
   end # if
 end
 
+def self.size_by
+  # Prompt user to say whether to make the radius or side the measure of size
+  @@size_by ||= "Side" # Set default value for size setting
+  prompts = ["Size by radius or length of side? "]
+  defaults = ["Side"]
+  list = ["Side|Radius"]
+  
+  # Get size
+  results = UI.inputbox(prompts, defaults, list, "How do you want to specify the size of the polyhedron?")
+ 
+ size_by = results[0] 
+
+end
 #=============================================================================
 
 class Tetrahedron < Parametric
@@ -122,10 +148,14 @@ class Tetrahedron < Parametric
 def create_entities(data, container)
 
   # Set sizes to draw
-  radius = data["radius"].to_l  # Radius
-
+  size = data[@@size_by].to_l  # Radius or side
+  if @@size_by == "Side"
+    radius = size/SIDE_TO_RAD_TETRA
+  else
+    radius = size
+  end
   # Remember values for next use
-  @@dimension1 = radius
+  @@dimension1 = size
 
   # Draw base and define apex point
   base_down_by = -radius/3.0
@@ -152,15 +182,18 @@ def create_entities(data, container)
 end
 
 def default_parameters
+  # Ask whether to set size of radius or side
+  @@size_by = PLUGIN.size_by
+
   # Set starting defaults to one unit_length
   @@unit_length = PLUGIN.unit_length
 
   # Set other starting defaults if not set
   if !defined? @@dimension1  # then no previous values input
-    defaults = { "radius" => @@unit_length }
+    defaults = { @@size_by => @@unit_length }
   else
   # Reuse last inputs as defaults
-    defaults = { "radius" => @@dimension1 }
+    defaults = { @@size_by => @@dimension1 }
   end # if
 
   # Return values
@@ -170,12 +203,7 @@ end
 def translate_key(key)
   prompt = key
 
-  case key
-  when "radius"
-    prompt = "Radius "
-  end
-
-  # Return value
+  # Return value # No translation needed here - Radius or Side 
   prompt
 end
 
@@ -194,36 +222,44 @@ class Cube < Parametric
 # A cube of side s has radius of circumsphere r = s*sqrt(3)/2
 
 # So a cube of radius r has a side of 2*r/sqrt(3), and half the diagonal of the cube's 
-#   base is (r/sqrt(3))*sqrt(2)
+#   base (the radius) is (r/sqrt(3))*sqrt(2)
 
 def create_entities(data, container)
-
   # Set sizes to draw
-  radius = data["radius"].to_l  # Radius
-
+  size = data[@@size_by].to_l  # Radius or side
+  if @@size_by == "Side"
+    radius = size/SIDE_TO_RAD_CUBE
+  else
+    radius = size
+  end
+  
   # Remember values for next use
-  @@dimension1 = radius
+  @@dimension1 = size
 
   # Draw base, reverse it to have it facing outwards, and pushpull it to height
   base_down_by = -radius/SQRT3
   square = container.add_ngon [0,0, base_down_by], Z_AXIS, (radius/SQRT3)*SQRT2, 4
   # Reverse to get front face outside
   square.reverse!
+
   base = container.add_face square
   base.pushpull 2.0*radius/SQRT3  
   
 end
 
 def default_parameters
+  # Ask whether to set size of radius or side
+  @@size_by = PLUGIN.size_by
+  
   # Set starting defaults to one unit_length
   @@unit_length = PLUGIN.unit_length
 
   # Set other starting defaults if not set
   if !defined? @@dimension1  # then no previous values input
-    defaults = { "radius" => @@unit_length }
+    defaults = { @@size_by => @@unit_length }
   else
   # Reuse last inputs as defaults
-    defaults = { "radius" => @@dimension1 }
+    defaults = { @@size_by => @@dimension1 }
   end # if
 
   # Return values
@@ -232,11 +268,6 @@ end
 
 def translate_key(key)
   prompt = key
-
-  case key
-  when "radius"
-    prompt = "Radius "
-  end
 
   # Return value
   prompt
@@ -259,10 +290,15 @@ def create_entities(data, container)
   # Octahedron has square centre of the same half-diagonal as the radius of its circumsphere
 
   # Set sizes to draw
-  radius = data["radius"].to_l  # Radius
-
+  size = data[@@size_by].to_l  # Radius or side
+  if @@size_by == "Side"
+    radius = size/SIDE_TO_RAD_OCTA
+  else
+    radius = size
+  end
+  
   # Remember values for next use
-  @@dimension1 = radius
+  @@dimension1 = size
 
   # Draw base and define apex points
   square = container.add_ngon [0,0, 0], Z_AXIS, radius , 4
@@ -286,15 +322,18 @@ def create_entities(data, container)
 end
 
 def default_parameters
+  # Ask whether to set size of radius or side
+  @@size_by = PLUGIN.size_by
+  
   # Set starting defaults to one unit_length
   @@unit_length = PLUGIN.unit_length
 
   # Set other starting defaults if not set
   if !defined? @@dimension1  # then no previous values input
-    defaults = { "radius" => @@unit_length }
+    defaults = { @@size_by => @@unit_length }
   else
   # Reuse last inputs as defaults
-    defaults = { "radius" => @@dimension1 }
+    defaults = { @@size_by => @@dimension1 }
   end # if
 
   # Return values
@@ -303,11 +342,6 @@ end
 
 def translate_key(key)
   prompt = key
-
-  case key
-  when "radius"
-    prompt = "Radius "
-  end
 
   # Return value
   prompt
@@ -326,10 +360,15 @@ class Dodecahedron < Parametric
   
 def create_entities(data, container)
   # Set sizes to draw
-  radius = data["radius"].to_l  # Radius
+  size = data[@@size_by].to_l  # Radius or side
+  if @@size_by == "Side"
+    radius = size/SIDE_TO_RAD_DODECA
+  else
+    radius = size
+  end
   
   # Remember values for next use
-  @@dimension1 = radius
+  @@dimension1 = size
 
   # Golden rectangle locating points on Dodecahedron with unit radius has 
   #   sides of length DDH_LONG_SIDE, DDH_SHORT_SIDE, defined in module initialization above
@@ -427,15 +466,18 @@ def create_entities(data, container)
 end
 
 def default_parameters
+  # Ask whether to set size of radius or side
+  @@size_by = PLUGIN.size_by
+  
   # Set starting defaults to one unit_length
   @@unit_length = PLUGIN.unit_length
 
   # Set starting defaults if none set
   if !defined? @@dimension1  # then no previous values input
-    defaults = { "radius" => @@unit_length }
+    defaults = { @@size_by => @@unit_length }
   else
   # Reuse last inputs as defaults
-    defaults = { "radius" => @@dimension1 }
+    defaults = { @@size_by => @@dimension1 }
   end # if
 
   # Return values
@@ -444,11 +486,6 @@ end
 
 def translate_key(key)
   prompt = key
-
-  case key
-  when "radius"
-    prompt = "Radius "
-  end
 
   # Return value
   prompt
@@ -468,11 +505,15 @@ class Icosahedron < Parametric
   
 def create_entities(data, container)
   # Set sizes to draw
-  radius = data["radius"].to_l  # Radius
+  size = data[@@size_by].to_l  # Radius or side
+  if @@size_by == "Side"
+    radius = size/SIDE_TO_RAD_ICOSA
+  else
+    radius = size
+  end
   
   # Remember values for next use
-  @@dimension1 = radius
-
+  @@dimension1 = size
   # Golden rectangle fitting inside Icosahedron with unit radius has 
   #   sides of length LONG_SIDE, SHORT_SIDE, defined in module initialization above
   
@@ -530,16 +571,18 @@ def create_entities(data, container)
 end
 
 def default_parameters
+  # Ask whether to set size of radius or side
+  @@size_by = PLUGIN.size_by
+  
   # Set starting defaults to one unit_length
-
   @@unit_length = PLUGIN.unit_length
 
   # Set starting defaults if none set
   if !defined? @@dimension1  # then no previous values input
-    defaults = { "radius" => @@unit_length }
+    defaults = { @@size_by => @@unit_length }
   else
   # Reuse last inputs as defaults
-    defaults = { "radius" => @@dimension1 }
+    defaults = { @@size_by => @@dimension1 }
   end # if
 
   # Return values
@@ -548,11 +591,6 @@ end
 
 def translate_key(key)
   prompt = key
-
-  case key
-  when "radius"
-    prompt = "Radius "
-  end
 
   # Return value
   prompt
