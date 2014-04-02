@@ -1,7 +1,7 @@
 #Plugin to draw regular polyhedra
 ## Introduction
 Initially, the plugin will draw just the five Platonic solids:
-[image to go here]
+
 
 From left to right in the diagram they are:
 - Tetrahedron
@@ -13,7 +13,7 @@ From left to right in the diagram they are:
 ## Usage
 Install the plugin in the usual way (see notes at [reference needed].
 
-You should now find an extra item in the Draw menu, [i]Polyhedra[/i] with a submenu for each shape as listed above.
+You should now find an extra item in the Draw menu, Polyhedra with a submenu for each shape as listed above.
 
 After clicking on the selected shape, you will be prompted whether to specify the size by the length of one side of the shape, or by its radius (the radius of a circumscribed sphere).
 
