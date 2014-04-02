@@ -1,9 +1,6 @@
 #Plugin to draw regular polyhedra
 ## Introduction
 Initially, the plugin will draw just the five Platonic solids:
-
-
-From left to right in the diagram they are:
 - Tetrahedron
 - Octahedron
 - Cube
