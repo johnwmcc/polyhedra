@@ -6,7 +6,9 @@ This plugin draws the five Platonic solids:
 - Cube
 - Dodecahedron
 - Icosahedron.
+
 ![Five Platonic solids image](platonic_solids.jpg "The five Platonic solids")
+
 I hope later to add code for the stellated regular polyhedra.
 
 ## Usage
