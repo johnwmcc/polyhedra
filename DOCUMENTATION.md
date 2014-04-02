@@ -7,6 +7,8 @@ Initially, the plugin will draw just the five Platonic solids:
 - Dodecahedron
 - Icosahedron.
 
+I hope later to add code for the stellated regular polyhedra.
+
 ## Usage
 Install the plugin in the usual way (see notes at [reference needed].
 
