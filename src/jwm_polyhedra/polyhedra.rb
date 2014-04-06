@@ -473,12 +473,12 @@ def create_entities(data, container)
 
   # Set transformation to move shape to picked origin point
 #p "Origin point picked = " +$origin_point.inspect
-  vector = Geom::Vector3d.new $origin_point[0], $origin_point[1], $origin_point[2]
-p "vector = " + vector.inspect
-  move_to_picked_origin = Geom::Transformation.translation vector   
+ # vector = Geom::Vector3d.new $origin_point[0], $origin_point[1], $origin_point[2]
+#p "vector = " + vector.inspect
+  #move_to_picked_origin = Geom::Transformation.translation vector   
    
   # Translate to new $origin_point
-  mesh.transform! move_to_picked_origin
+  #mesh.transform! move_to_picked_origin
   # Create faces from the mesh
   container.add_faces_from_mesh(mesh, 0) # smooth constant = 0 for no smoothing
 
