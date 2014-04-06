@@ -3,16 +3,19 @@
 # License: The MIT License (MIT)
 # A plugin to draw parametric regular polyhedra, centred on the origin, of a user-specified radius
 
-# v1.0. Draws all Platonic solids. Parts of the code adapted from Parametric3D Shapes plugin
+# v1.0. Draws all Platonic solids. Parts of the code adapted from Parametric 3D Shapes plugin
 # v1.1  Added choice of length of side, or radius, for size.
-
+# load "jwm_polyhedra/polyhedra.rb"
 # Load other required files
 require "sketchup.rb"
+require "D:/Documents/GitHub/pick_point/src/jwm_pick_point/pick_point.rb"
 require File.join(File.dirname(__FILE__), 'parametric.rb')
-require File.join(File.dirname(__FILE__), 'mesh_additions.rb')
+
+# require File.join(File.dirname(__FILE__), 'mesh_additions.rb')
 
 module CommunityExtensions::Polyhedra
 PLUGIN = self # Allows self reference later when calling function in module
+
 ### Constants used in construction
 #============================================================================
 ## Tetrahedron
@@ -64,6 +67,7 @@ DDH_C = 0.794654472292
 # Define constant for ratio of side to radius
 SIDE_TO_RAD_DODECA = 0.713644179547
 SIDE_TO_RAD_ICOSA = 1.051462501620
+
 
 #=============================================================================
 # Find which unit and format the model is using and define unit_length
@@ -125,28 +129,32 @@ def self.size_by
   prompts = ["Size by radius or length of side? "]
   defaults = ["Side"]
   list = ["Side|Radius"]
-  
+
   # Get size
   results = UI.inputbox(prompts, defaults, list, "How do you want to specify the size of the polyhedron?")
- 
- size_by = results[0] 
+  if results # Return selection
+    size_by = results[0]
+  else
+    size_by = "Side"
+  end
+end
 
+def onCancel(flag, view)
+  self.reset(view)
 end
 #=============================================================================
 
 class Tetrahedron < Parametric
 # Note: from Wikipedia, radius of circumsphere is sqrt(3/8)*edge_length
-# Wikipedia gives coordinates of corners (±1, 0, -1/sqrt(2)), (±1, 0, -1/sqrt(2)) for 
-#   tetrahedron centred on the origin with edge_length = 2. This is WRONG. The centre is not
-#   midway up between base and apex
-# I've redrawn tetrahedron in a circumsphere centred at ORIGIN with unit radius (see diagrams in separate PDF)
-# Height from centroid of base triangle to apex is 1.333333 * radius
+# Wikipedia gives coordinates of corners (±1, 0, -1/sqrt(2)), (±1, 0, -1/sqrt(2)) for tetrahedron centred on the origin with edge_length = 2. This is # WRONG. The centre is not midway up between base and apex.
+
+# I've redrawn tetrahedron in a circumsphere centred at ORIGIN with unit radius (see diagrams in DOCUMENTATION.md)
+# Height from centroid of base triangle to apex is 1.333recurring * radius
 # From ORIGIN to apex is just the radius
-# From centroid of base to ORIGIN is 0.333333 * radius
+# From centroid of base to ORIGIN is 0.333recurring * radius
 # Side of triangular face is 2 * (sqrt(1-(1/3)**2) * cos(30 degrees) = 1.632993161856
 
 def create_entities(data, container)
-
   # Set sizes to draw
   size = data[@@size_by].to_l  # Radius or side
   if @@size_by == "Side"
@@ -167,22 +175,23 @@ def create_entities(data, container)
 
   # Create the sides
   apex = [0,0,radius]
-  edge1 = nil
-  edge2 = nil
 
   for i in 0..2
     edge = base_edges[i] 
     tetrahedron = container.add_face edge.start.position, edge.end.position, apex
+    
+    #Reverse faces round apex
     container.each do |entity|
       if entity.is_a? Sketchup::Face
         entity.reverse!
       end #if
     end #do
   end #for
+
 end
 
 def default_parameters
-  # Ask whether to set size of radius or side
+  # Ask whether to set size of radius or side (call size_by method)
   @@size_by = PLUGIN.size_by
 
   # Set starting defaults to one unit_length
@@ -203,7 +212,8 @@ end
 def translate_key(key)
   prompt = key
 
-  # Return value # No translation needed here - Radius or Side 
+  # Return value 
+  # No translation needed here - key is already capitalised as Radius or Side 
   prompt
 end
 
@@ -270,6 +280,7 @@ def translate_key(key)
   prompt = key
 
   # Return value
+  # No translation needed here - key is already capitalised as Radius or Side 
   prompt
 end
 
@@ -459,7 +470,15 @@ def create_entities(data, container)
 
   # Top - draw counter-clockwise to face outside up
   mesh.add_polygon points_top[0], points_top[1], points_top[2], points_top[3], points_top[4]
+
+  # Set transformation to move shape to picked origin point
+#p "Origin point picked = " +$origin_point.inspect
+  vector = Geom::Vector3d.new $origin_point[0], $origin_point[1], $origin_point[2]
+p "vector = " + vector.inspect
+  move_to_picked_origin = Geom::Transformation.translation vector   
    
+  # Translate to new $origin_point
+  mesh.transform! move_to_picked_origin
   # Create faces from the mesh
   container.add_faces_from_mesh(mesh, 0) # smooth constant = 0 for no smoothing
 
